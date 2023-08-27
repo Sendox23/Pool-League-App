@@ -1,20 +1,37 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useContext } from "react";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
 
-export default function App() {
+import LoadingSpinner from "./components/ui/LoadingSpinner";
+import AuthenticatedStackScreen from "./components/navigation/AuthenticatedStack";
+import AuthStackScreen from "./components/navigation/AuthStack";
+
+import { AuthContext, AuthProvider } from "./store/context/AuthContext";
+
+function Root() {
+  const { isAuthenticated, isLoadingAuth } = useContext(AuthContext);
+
+  if (isLoadingAuth) {
+    return <LoadingSpinner />;
+  }
+
+  const Screen = isAuthenticated ? AuthenticatedStackScreen : AuthStackScreen;
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaView style={{ flex: 1 }}>
+      <StatusBar style="light" />
+      <NavigationContainer>
+        <Screen />
+      </NavigationContainer>
+    </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default function App() {
+  return (
+    <AuthProvider>
+      <Root />
+    </AuthProvider>
+  );
+}
