@@ -1,9 +1,9 @@
 import { View, Text } from "react-native";
 
-export default function MatchHistoryScreen() {
+export default function MatchHistoryScreen({leagueType}) {
   return (
     <View>
-      <Text>Match History Screen</Text>
+      <Text>{leagueType} Match History Screen</Text>
     </View>
   );
 }

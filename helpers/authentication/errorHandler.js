@@ -19,7 +19,11 @@ const errorMessages = {
   emailLogin: "The email or password is incorrect, please try again.",
   phoneNumber: "Please enter a valid phone number in the format (XXX)XXX-XXXX.",
   password:
-  "Please ensure your password is at least 8 characters long. It should include at least one uppercase letter, one lowercase letter, a number, and a special character such as (!@#$%^&*).",
+    "Password must meet the following requirements:\n" +
+    "- At least 8 characters long.\n" +
+    "- Contains a capital letter.\n" +
+    "- Contains a number.\n" +
+    "- Contains a special character.",
   passwordLogin: "The email or password is incorrect, please try again.",
   confirmEmail: "Please make sure your emails match.",
   confirmPassword: "Please make sure your passwords match.",

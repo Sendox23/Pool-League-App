@@ -3,16 +3,17 @@ import { commonScreenStyle } from "../../constants/commonStyles";
 import { TouchableOpacity } from "react-native";
 
 export default function LeaguesScreen({ navigation }) {
-  const handleImagePress = (screenName) => {
-    navigation.navigate(screenName);
+  const handleImagePress = (screenName, params) => {
+    navigation.navigate(screenName, params);
   };
 
   return (
     <View style={commonScreenStyle.container}>
       <TouchableOpacity
         style={styles.imageContainer}
-        onPress={() => handleImagePress("Eight Ball")}
+        onPress={() => handleImagePress("Eight Ball", { leagueType: "Eight Ball" })}
         activeOpacity={0.7}
+
       >
         <Image
           style={styles.images}
@@ -23,7 +24,7 @@ export default function LeaguesScreen({ navigation }) {
       <View style={styles.imageContainer}>
         <TouchableOpacity
           style={styles.imageContainer}
-          onPress={() => handleImagePress("Nine Ball")}
+          onPress={() => handleImagePress("Nine Ball", {leagueType: "Nine Ball"})}
           activeOpacity={0.7}
         >
           <Image
@@ -35,7 +36,7 @@ export default function LeaguesScreen({ navigation }) {
       <View style={styles.imageContainer}>
         <TouchableOpacity
           style={styles.imageContainer}
-          onPress={() => handleImagePress("Ten Ball")}
+          onPress={() => handleImagePress("Ten Ball", {leagueType: "Ten Ball"})}
           activeOpacity={0.7}
         >
           <Image

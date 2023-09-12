@@ -1,9 +1,9 @@
 import React, { useState, useContext, useEffect } from "react";
 import { View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { validateForm } from "../../helpers/validationHelper";
-import { formatPhoneNumber } from "../../helpers/phoneNumberHelper";
-import { handleValidationError } from "../../helpers/errorHandler";
+import { validateForm } from "../../helpers/authentication/validationHelper";
+import { formatPhoneNumber } from "../../helpers/authentication/phoneNumberHelper";
+import { handleValidationError } from "../../helpers/authentication/errorHandler";
 
 import AuthForm from "./AuthForm";
 import FlatButton from "../ui/FlatButton";
@@ -57,7 +57,7 @@ function AuthContent({ onSubmit, isSignUp }) {
   const handleSubmit = async () => {
     setIsLoading(true);
     setIsSubmitted(true);
-
+  
     const fieldsToCheck = isSignUp
       ? [
           "firstName",
@@ -69,24 +69,28 @@ function AuthContent({ onSubmit, isSignUp }) {
           "confirmPassword",
         ]
       : ["email", "password"];
-
+  
     try {
       for (const field of fieldsToCheck) {
         if (!validation[field] && !handleValidationError(field, isSignUp)) {
           return;
         }
       }
-
-      const isSuccessful = await onSubmit(
-        formData.email,
-        formData.password,
-        formData.confirmEmail,
-        formData.confirmPassword,
-        formData.phoneNumber,
-        formData.firstName,
-        formData.lastName
-      );
-
+  
+      let isSuccessful = false;
+  
+      if (isSignUp) {
+        isSuccessful = await onSubmit(
+          formData.email,
+          formData.password,
+          formData.phoneNumber,
+          formData.firstName,
+          formData.lastName
+        );
+      } else {
+        isSuccessful = await onSubmit(formData.email, formData.password);
+      }
+  
       if (isSuccessful) {
         // Reset the form fields after successful onSubmit call
         setFormData({

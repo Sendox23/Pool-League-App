@@ -5,20 +5,26 @@ import UpcomingMatchesScreen from "../../screens/matches/UpcomingMatchesScreen";
 
 const MatchesTabsNavigator = createBottomTabNavigator();
 
-export default function MatchesTabsScreen() {
+export default function MatchesTabsScreen({ route }) {
   return (
-    <MatchesTabsNavigator.Navigator>
+    <MatchesTabsNavigator.Navigator screenOptions={{ headerShown: false }}>
       <MatchesTabsNavigator.Screen
         name="Upcoming"
-        component={UpcomingMatchesScreen}
+        children={() => (
+          <UpcomingMatchesScreen leagueType={route.params?.leagueType} />
+        )}
       />
       <MatchesTabsNavigator.Screen
         name="Current Match"
-        component={CurrentMatchScreen}
+        children={() => (
+          <CurrentMatchScreen leagueType={route.params?.leagueType} />
+        )}
       />
       <MatchesTabsNavigator.Screen
         name="Match History"
-        component={MatchHistoryScreen}
+        children={() => (
+          <MatchHistoryScreen leagueType={route.params?.leagueType} />
+        )}
       />
     </MatchesTabsNavigator.Navigator>
   );

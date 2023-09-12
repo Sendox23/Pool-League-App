@@ -1,9 +1,9 @@
 import { View, Text } from "react-native";
 
-export default function UpcomingMatchesScreen() {
+export default function UpcomingMatchesScreen({leagueType}) {
   return (
     <View>
-      <Text>Upcoming Matches Screen</Text>
+      <Text>{leagueType} Upcoming Matches Screen</Text>
     </View>
   );
 }
