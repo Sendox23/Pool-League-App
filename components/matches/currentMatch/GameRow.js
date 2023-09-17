@@ -6,37 +6,40 @@ export default function GameRow({
   index,
   userCtx,
   game,
-  onEdit,
-  onDelete,
-  isEditMode,
+  onEditGame,
+  onDeleteGame,
+  opponentFirstName,
+  opponentLastName,
+  userFullName,
 }) {
   return (
-    <View key={game.id} style={styles.row}>
+    <View style={styles.row}>
       <Text style={styles.cell}>
         {`Game ${index + 1}:`}
-        {game.winner === "player1" ? ` ${userCtx.firstName} ${userCtx.lastName}` : " Player 2"}
+        {game.winner === userFullName
+          ? ` ${userCtx.firstName} ${userCtx.lastName}`
+          : ` ${opponentFirstName} ${opponentLastName}`}
         {game.breakAndRun ? " \n(Break & Run)" : ""}
       </Text>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={onEdit} style={styles.iconButton}>
+        <TouchableOpacity
+          onPress={() => {
+            onEditGame(game); // Add this line to call onEditGame when the edit button is pressed
+          }}
+          style={styles.iconButton}
+        >
           <FontAwesome5 name="edit" size={12} color="black" />
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={onDelete}
-          style={[styles.iconButton, isEditMode ? styles.disabledButton : {}]} // Add styles for the disabled state
-          disabled={isEditMode} // Disable button when in edit mode
+          onPress={() => onDeleteGame(game.id)}
+          style={styles.iconButton}
         >
-          <FontAwesome5
-            name="trash-alt"
-            size={12}
-            color={isEditMode ? "grey" : "black"}
-          />
+          <FontAwesome5 name="trash" size={12} color="black" />
         </TouchableOpacity>
       </View>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",

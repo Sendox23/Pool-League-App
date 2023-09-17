@@ -18,6 +18,7 @@ export function AuthProvider({ children }) {
     const subscriber = auth.onAuthStateChanged(async (authUser) => {
       setUser(authUser);
       setIsAuthenticated(!!authUser && authUser.emailVerified);
+
       if (authUser) {
         // Assuming you're storing user details in a 'users' collection in Firebase Realtime Database or Firestore
         const userDetails = await fetchUserDetailsFromDatabase(authUser.uid);

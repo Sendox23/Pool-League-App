@@ -1,33 +1,36 @@
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+
 import CheckBox from "expo-checkbox";
+import Button from "../../ui/Button";
+import FlatButton from "../../ui/FlatButton";
 import { Colors } from "../../../constants/colors";
 
 export default function GameEditControls({
-  userCtx,
-  onEdit,
+  onEditGame,
   onCancel,
   breakAndRun,
+  setBreakAndRun,
   toggleBreakAndRun,
-  gameNumber, // This prop is perfectly added, and you're using it correctly below
+  gameNumber,
+  opponentFullName,
+  userFullName,
 }) {
+  const handleSave = (winnerName) => {
+    const editedData = {
+      winner: winnerName,
+      breakAndRun: breakAndRun,
+    };
+    onEditGame(editedData); // 'onEditGame' was passed down as a prop
+  };
   return (
     <View style={styles.editControls}>
-      <Text style={styles.editGameText}>Edit Game {gameNumber}</Text>
+      <Text style={styles.editGameText}>Edit Game {gameNumber + 1}</Text>
       <View style={styles.playersRow}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => onEdit("player1")}
-        >
-          <Text style={styles.buttonText}>{userCtx.firstName} {userCtx.lastName}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => onEdit("player2")}
-        >
-
-          <Text style={styles.buttonText}>Player 2</Text>
-        </TouchableOpacity>
+        <Button onPress={() => handleSave(userFullName)}>{userFullName}</Button>
+        <Button onPress={() => handleSave(opponentFullName)}>
+          {opponentFullName}
+        </Button>
       </View>
       <View style={styles.actionsRow}>
         <View style={styles.breakAndRunContainer}>
@@ -35,12 +38,19 @@ export default function GameEditControls({
           <Text style={styles.checkBoxText}>Break & Run</Text>
         </View>
       </View>
-      <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-        <Ionicons name="md-close" size={16} color={Colors.secondary50} />
-      </TouchableOpacity>
+      <FlatButton
+        onPress={() => {
+          onCancel(); // Call the onCancel function
+          setBreakAndRun(false);
+        }}
+        style={styles.cancelButton}
+      >
+        <Ionicons name="md-close" size={16} color={"white"} />
+      </FlatButton>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   editGameText: {
     fontSize: 16,
@@ -67,23 +77,23 @@ const styles = StyleSheet.create({
   },
   breakAndRunContainer: {
     flexDirection: "row",
-    justifyContent: "center",  // Center items horizontally
-    alignItems: "center",      // Center items vertically
+    justifyContent: "center", // Center items horizontally
+    alignItems: "center", // Center items vertically
     backgroundColor: Colors.secondary400,
-    paddingVertical: 6,      // Increased vertical padding for more vertical space
-    paddingHorizontal: 10,    // Increased horizontal padding for more space on the sides
+    paddingVertical: 6, // Increased vertical padding for more vertical space
+    paddingHorizontal: 10, // Increased horizontal padding for more space on the sides
     borderRadius: 4,
     borderColor: Colors.secondary100,
     borderWidth: 1,
     marginRight: 10,
-    marginVertical: 5,        // Added vertical margin for more spacing around
+    marginVertical: 5, // Added vertical margin for more spacing around
   },
 
   checkBoxText: {
-    marginLeft: 8,            // Slightly more space between checkbox and text
+    marginLeft: 8, // Slightly more space between checkbox and text
     color: Colors.secondary50,
-    fontSize: 14,             // Increased font size for clarity
-    fontWeight: '500',        // Made the text a bit bolder
+    fontSize: 14, // Increased font size for clarity
+    fontWeight: "500", // Made the text a bit bolder
   },
   button: {
     flexDirection: "row",

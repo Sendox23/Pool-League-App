@@ -8,14 +8,15 @@ import {
 
 import { Colors } from "../../constants/colors";
 
-function Button({ children, onPress, disabled = false }) {
+function Button({ children, onPress, disabled = false, style = {} }) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style.container]}>
       <Pressable
         style={({ pressed }) => [
           styles.button,
           pressed && styles.pressed,
           disabled && styles.disabled,
+          style.button,  // overriding/merging style
         ]}
         onPress={onPress}
         disabled={disabled}
@@ -24,7 +25,7 @@ function Button({ children, onPress, disabled = false }) {
           {disabled ? (
             <ActivityIndicator color={Colors.primary900} />
           ) : (
-            <Text style={styles.buttonText}>{children}</Text>
+            <Text style={[styles.buttonText, style.buttonText]}>{children}</Text>
           )}
         </View>
       </Pressable>

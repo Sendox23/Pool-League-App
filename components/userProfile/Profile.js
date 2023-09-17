@@ -9,7 +9,7 @@ import { AuthContext } from "../../store/context/AuthContext";
 export default function Profile() {
   const userCtx = useContext(AuthContext);
   const [modalVisible, setModalVisible] = useState(false);
-
+  
   return (
     <View style={styles.container}>
       <InfoItem label="First Name:" value={userCtx.firstName} />

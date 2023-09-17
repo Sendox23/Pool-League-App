@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import { StatusBar } from "expo-status-bar";
-import { SafeAreaView } from "react-native";
+import { StatusBar} from "expo-status-bar";
+import { SafeAreaView, Platform  } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 
 import LoadingSpinner from "./components/ui/LoadingSpinner";
@@ -20,7 +20,7 @@ function Root() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <StatusBar style="light" />
+      <StatusBar style={Platform.OS === 'ios' ? 'dark' : 'light'} />
       <NavigationContainer>
         <Screen />
       </NavigationContainer>

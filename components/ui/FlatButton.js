@@ -1,9 +1,13 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-function FlatButton({ children, onPress }) {
+function FlatButton({ children, onPress, style }) {
   return (
     <Pressable
-      style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.button,
+        pressed && styles.pressed,
+        style,  // Merge external style
+      ]}
       onPress={onPress}
     >
       <View>
@@ -17,7 +21,7 @@ export default FlatButton;
 
 const styles = StyleSheet.create({
   button: {
-    marginTop: 20,
+    marginTop: 10,
     marginHorizontal: 12,
   },
   pressed: {

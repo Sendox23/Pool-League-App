@@ -1,25 +1,28 @@
 import { Alert } from "react-native";
 
-// Firebase utilities
 import { authenticateUser } from "../../util/firebase/firebaseAuth";
 import { writeUserData } from "../../util/firebase/firebaseDb";
 
-// Components
 import AuthContent from "../../components/auth/AuthContent";
 import AuthLayout from "../../components/auth/AuthLayout";
 
 function SignUpScreen({ navigation }) {
-  
   /**
    * Handles the sign-up process, including:
    * - Authenticating the user with Firebase Authentication
    * - Saving user details in the Firebase Realtime Database
    * - Navigating to the email verification screen
-   */
-  const handleSubmit = async (email, password, phoneNumber, firstName, lastName) => {
+   */ 
+
+  const handleSubmit = async (
+    email,
+    password,
+    phoneNumber,
+    firstName,
+    lastName
+  ) => {
     try {
       const user = await authenticateUser(email, password, true);
-
       if (user) {
         const userId = user.uid;
 
@@ -32,7 +35,7 @@ function SignUpScreen({ navigation }) {
     } catch (error) {
       Alert.alert("Failed to sign up", error.message);
     }
-
+    console.log("UID from authentication:", user.uid);
     return false;
   };
 

@@ -1,31 +1,25 @@
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import MatchesTabs from "./MatchesTabs";
 import CurrentMatchScreen from "../../screens/matches/CurrentMatchScreen";
-import MatchHistoryScreen from "../../screens/matches/MatchHistoryScreen";
-import UpcomingMatchesScreen from "../../screens/matches/UpcomingMatchesScreen";
+const MatchesStackNavigator = createNativeStackNavigator();
 
-const MatchesTabsNavigator = createBottomTabNavigator();
-
-export default function MatchesTabsScreen({ route }) {
+export function MatchesStack({ route, navigation }) {
   return (
-    <MatchesTabsNavigator.Navigator screenOptions={{ headerShown: false }}>
-      <MatchesTabsNavigator.Screen
-        name="Upcoming"
-        children={() => (
-          <UpcomingMatchesScreen leagueType={route.params?.leagueType} />
-        )}
+    <MatchesStackNavigator.Navigator
+      screenOptions={{
+        headerShown: false,  // You can modify this if you want headers.
+      }}
+    >
+      <MatchesStackNavigator.Screen
+        name="MatchesTabs"
+        component={MatchesTabs}
+        initialParams={{ leagueType: route.params?.leagueType }}
       />
-      <MatchesTabsNavigator.Screen
-        name="Current Match"
-        children={() => (
-          <CurrentMatchScreen leagueType={route.params?.leagueType} />
-        )}
+      <MatchesStackNavigator.Screen
+        name="CurrentMatch"
+        component={CurrentMatchScreen}
+        initialParams={{ leagueType: route.params?.leagueType }}
       />
-      <MatchesTabsNavigator.Screen
-        name="Match History"
-        children={() => (
-          <MatchHistoryScreen leagueType={route.params?.leagueType} />
-        )}
-      />
-    </MatchesTabsNavigator.Navigator>
+    </MatchesStackNavigator.Navigator>
   );
 }
