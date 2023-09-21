@@ -1,6 +1,6 @@
 import { Alert } from "react-native";
 import { authenticateUser } from "../../util/firebaseAuth";
-import { writeUserData } from "../../util/firebaseDb";
+import { writeUserData } from "../../util/firebase/databaseFunctions/userFunctions"
 
 import AuthContent from "../../components/auth/AuthContent";
 import AuthLayout from "../../components/auth/AuthLayout";

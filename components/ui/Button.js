@@ -1,12 +1,13 @@
+import React from 'react';
 import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
   View,
-} from "react-native";
+} from 'react-native';
 
-import { Colors } from "../../constants/colors";
+import { Colors } from '../../constants/colors';
 
 function Button({ children, onPress, disabled = false, style = {} }) {
   return (
@@ -16,12 +17,11 @@ function Button({ children, onPress, disabled = false, style = {} }) {
           styles.button,
           pressed && styles.pressed,
           disabled && styles.disabled,
-          style.button,  // overriding/merging style
+          style.button, // overriding/merging style
         ]}
         onPress={onPress}
-        disabled={disabled}
-      >
-        <View>
+        disabled={disabled}>
+        <View style={styles.buttonContent}>
           {disabled ? (
             <ActivityIndicator color={Colors.primary900} />
           ) : (
@@ -37,7 +37,7 @@ export default Button;
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   button: {
     borderRadius: 6,
@@ -47,24 +47,31 @@ const styles = StyleSheet.create({
     marginTop: 12,
     backgroundColor: Colors.primary300,
     elevation: 2,
-    shadowColor: "black",
+    shadowColor: 'black',
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    minWidth: "60%",
-    maxWidth: "100%",
+    minWidth: '60%',
+    height: 40,
+    width: 140,
+    overflow: 'hidden', // To hide the shadow that spills outside the view
   },
   pressed: {
-    backgroundColor: Colors.primary400,  // Darken the button when pressed
+    backgroundColor: Colors.primary400, // Darken the button when pressed
   },
   disabled: {
-    backgroundColor: Colors.primary100,  // Lighter color for disabled state
-    opacity: 0.7,  // Added some opacity to emphasize the disabled state
+    backgroundColor: Colors.primary100, // Lighter color for disabled state
+    opacity: 0.7, // Added some opacity to emphasize the disabled state
+  },
+  buttonContent: {
+    flex: 1,
+    justifyContent: 'center', // Center content vertically
+    alignItems: 'center', // Center content horizontally
   },
   buttonText: {
-    textAlign: "center",
+    textAlign: 'center',
     color: Colors.secondary900,
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 });

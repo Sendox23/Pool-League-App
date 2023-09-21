@@ -1,31 +1,36 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
 
 import GameEditControls from "./GameEditControls";
 import PlayersHeader from "./PlayersHeader";
-import AddGameButton from "./AddGameButton";
+import AddGameButtons from "./AddGameButtons";
 import BreakAndRunCheckBox from "./BreakAndRunCheckBox";
+import GameList from "./GameList";
+import ErrorComponent from "../../ui/ErrorComponent";
 
 import {
+  gamesRef,
   addGame,
   editGame,
   deleteGame,
-  updateMatchDetails,
-  gamesRef,
   fetchGamesRealTime,
-} from "../../../util/firebase/firebaseDb";
-import * as Crypto from "expo-crypto";
+} from "../../../util/firebase/databaseFunctions/gameFunctions";
+import {
+  subscribeToMatchStatus,
+  updateMatchDetails,
+} from "../../../util/firebase/databaseFunctions/matchFunctions";
 import { calculateWins } from "../../../helpers/games/gameHelpers";
 import { AuthContext } from "../../../store/context/AuthContext";
-import { Colors } from "../../../constants/colors";
-import GameList from "./GameList";
 
-export default function GamesTable({
+import { Colors } from "../../../constants/colors";
+import LoadingOverlay from "../../ui/LoadingOverlay";
+
+export default function Games({
+  navigation,
   leagueType,
-  opponentFirstName,
-  opponentLastName,
+  opponentName,
   bracket,
-  matchId, // Capture the matchId from the props
+  matchId,
 }) {
   const userCtx = useContext(AuthContext);
 
@@ -34,61 +39,94 @@ export default function GamesTable({
   const [breakAndRun, setBreakAndRun] = useState(false);
   const [userBreakAndRuns, setUserBreakAndRuns] = useState(0);
   const [opponentBreakAndRuns, setOpponentBreakAndRuns] = useState(0);
+  const [isAddingGame, setIsAddingGame] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const userFullName = `${userCtx.firstName} ${userCtx.lastName}`;
-  const opponentFullName = `${opponentFirstName} ${opponentLastName}`;
-
   const userWins = calculateWins(games, userFullName);
-  const opponentWins = calculateWins(games, opponentFullName);
+  const opponentWins = calculateWins(games, opponentName);
+
+  const commonNavParams = {
+    leagueType,
+    matchId,
+    userFullName,
+    userWins,
+    opponentName,
+    opponentWins,
+  };
 
   useEffect(() => {
+    const unsubscribeMatch = subscribeToMatchStatus(
+      leagueType,
+      bracket,
+      matchId,
+      (details) => {
+        console.log(details);
+        if (details?.status === "Finished") {
+          navigation.navigate("MatchResults", {
+            ...commonNavParams,
+            leagueType: leagueType,
+            matchId: matchId,
+            userFullName: userFullName,
+            userWins: details[userFullName].wins,
+            opponentName: opponentName,
+            opponentWins: details[opponentName].wins,
+            matchDetails: details,
+            winner: details.winner,
+            userBreakAndRuns: details[userFullName].breakAndRuns,
+            opponentBreakAndRuns: details[opponentName].breakAndRuns,
+          });
+        }
+      }
+    );
+
     const dbRef = gamesRef(leagueType, bracket, matchId);
-    const unsubscribe = fetchGamesRealTime(dbRef, setGames);
+    const unsubscribeGames = fetchGamesRealTime(dbRef, setGames);
 
     return () => {
-      unsubscribe();
+      unsubscribeMatch();
+      unsubscribeGames();
     };
-  }, [leagueType, bracket, matchId, selectedGame]);
+  }, [matchId, leagueType, bracket, userWins, opponentWins]);
 
   const addGameHandler = async (player) => {
     const newGame = {
       winner: player,
       breakAndRun: breakAndRun,
     };
-    const newGameId = games.length + Crypto.randomUUID();
 
+    const newGameId = Date.now().toString();
+    setIsAddingGame(true);
+    setError(null);
     try {
       await addGame(leagueType, bracket, matchId, newGame, newGameId);
 
       if (breakAndRun) {
         if (player === userFullName) {
           setUserBreakAndRuns((prevCount) => prevCount + 1);
-        } else if (player === opponentFullName) {
+        } else if (player === opponentName) {
           setOpponentBreakAndRuns((prevCount) => prevCount + 1);
         }
       }
-
-      const updatedGames = fetchGamesRealTime(leagueType, bracket, matchId);
-      setGames(updatedGames);
-
-      setBreakAndRun(!!false);
-    } catch (error) {}
+    } catch (error) {
+      setError(error.message);
+    }
+    setBreakAndRun(false);
+    setIsAddingGame(false);
   };
 
   const editGameHandler = async (gameId, editedData) => {
     try {
       await editGame(leagueType, bracket, matchId, gameId.id, editedData);
-      const updatedGames = fetchGamesRealTime(leagueType, bracket, matchId);
-      setGames(updatedGames);
-      setBreakAndRun(!!false);
     } catch (error) {}
+    setBreakAndRun(false);
+    setSelectedGame(null);
   };
 
   const deleteGameHandler = async (gameId) => {
     try {
       await deleteGame(leagueType, bracket, matchId, gameId);
-      const updatedGames = fetchGamesRealTime(leagueType, bracket, matchId);
-      setGames(updatedGames);
     } catch (error) {}
   };
 
@@ -99,41 +137,64 @@ export default function GamesTable({
   const handleSubmitMatch = async () => {
     const matchDetails = {
       status: "Finished",
+      winner: userWins > opponentWins ? userFullName : opponentName,
       [userFullName]: { wins: userWins, breakAndRuns: userBreakAndRuns },
-      [opponentFullName]: {
+      [opponentName]: {
         wins: opponentWins,
         breakAndRuns: opponentBreakAndRuns,
       },
     };
+    setIsLoading(true);
+    setError(null);
     try {
       await updateMatchDetails(leagueType, bracket, matchId, matchDetails);
-      alert("Match details updated!");
+      navigation.navigate("MatchResults", {
+        leagueType: leagueType,
+        matchId: matchId,
+        matchDetails: matchDetails,
+        userFullName: userFullName,
+        userWins: userWins,
+        winner: matchDetails.winner,
+        userBreakAndRuns: matchDetails[userFullName].breakAndRuns,
+        opponentBreakAndRuns: matchDetails[opponentName].breakAndRuns,
+        opponentName: opponentName,
+        opponentWins: opponentWins,
+      });
     } catch (error) {
-      // Handle the error
+      setError(error.message);
     }
+    setIsLoading(false);
   };
 
   // Check if max games have been reached
   const isMaxGamesReached = userWins >= 7 || opponentWins >= 7;
+  const isEditing = selectedGame !== null;
+
+  if (isLoading) {
+    return <LoadingOverlay />;
+  }
+
+  if (error) {
+    return <ErrorComponent error={error} />;
+  }
 
   return (
     <View style={styles.container}>
       <PlayersHeader
         userCtx={userCtx}
         leagueType={leagueType}
-        opponentFirstName={opponentFirstName}
-        opponentLastName={opponentLastName}
+        opponentName={opponentName}
         userWins={userWins}
         opponentWins={opponentWins}
       />
       <GameList
         games={games}
         userCtx={userCtx}
-        opponentFirstName={opponentFirstName}
-        opponentLastName={opponentLastName}
+        opponentName={opponentName}
         onEditGame={setSelectedGame}
         onDeleteGame={deleteGameHandler}
         userFullName={userFullName}
+        isEditing={isEditing}
       />
       {selectedGame !== null ? (
         <GameEditControls
@@ -143,7 +204,7 @@ export default function GamesTable({
           setBreakAndRun={setBreakAndRun}
           toggleBreakAndRun={toggleBreakAndRunHandler}
           gameNumber={games.findIndex((game) => game.id === selectedGame.id)}
-          opponentFullName={opponentFullName}
+          opponentName={opponentName}
           userFullName={userFullName}
           onEditGame={(editedData) => {
             editGameHandler(selectedGame, editedData);
@@ -151,20 +212,14 @@ export default function GamesTable({
         />
       ) : (
         <>
-          <View style={styles.buttonContainer}>
-            {["player1", "player2"].map((player) => {
-              const playerName =
-                player === "player1" ? userFullName : opponentFullName;
-              return (
-                <AddGameButton
-                  key={player}
-                  playerName={playerName}
-                  onPress={() => addGameHandler(playerName)}
-                  isDisabled={isMaxGamesReached}
-                />
-              );
-            })}
-          </View>
+          <AddGameButtons
+            addGame={addGameHandler}
+            isDisabled={isMaxGamesReached}
+            userFullName={userFullName}
+            opponentName={opponentName}
+            isLoading={isAddingGame}
+          />
+
           <BreakAndRunCheckBox
             value={breakAndRun}
             onValueChange={toggleBreakAndRunHandler}
@@ -176,7 +231,9 @@ export default function GamesTable({
           style={styles.submitButton}
           onPress={handleSubmitMatch}
         >
-          <Text style={styles.buttonText}>Submit</Text>
+          <Text style={styles.buttonText}>
+            {isLoading ? <LoadingSpinner /> : "Submit Match"}
+          </Text>
         </TouchableOpacity>
       )}
     </View>
@@ -185,15 +242,13 @@ export default function GamesTable({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.secondary500,
+    backgroundColor: Colors.primary800,
     flex: 1,
     padding: 20,
-  },
-
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 20,
+    borderRadius: 12,
+    borderWidth: 3,
+    borderColor: Colors.primary600,
+    elevation: 10,
   },
 
   submitButton: {

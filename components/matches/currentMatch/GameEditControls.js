@@ -13,7 +13,7 @@ export default function GameEditControls({
   setBreakAndRun,
   toggleBreakAndRun,
   gameNumber,
-  opponentFullName,
+  opponentName, 
   userFullName,
 }) {
   const handleSave = (winnerName) => {
@@ -28,8 +28,8 @@ export default function GameEditControls({
       <Text style={styles.editGameText}>Edit Game {gameNumber + 1}</Text>
       <View style={styles.playersRow}>
         <Button onPress={() => handleSave(userFullName)}>{userFullName}</Button>
-        <Button onPress={() => handleSave(opponentFullName)}>
-          {opponentFullName}
+        <Button onPress={() => handleSave(opponentName)}>
+          {opponentName}
         </Button>
       </View>
       <View style={styles.actionsRow}>
@@ -95,23 +95,7 @@ const styles = StyleSheet.create({
     fontSize: 14, // Increased font size for clarity
     fontWeight: "500", // Made the text a bit bolder
   },
-  button: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: Colors.primary400,
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 4,
-    borderColor: Colors.secondary100,
-    borderWidth: 1,
-    marginRight: 10,
-  },
-  buttonText: {
-    marginLeft: 10,
-    color: Colors.secondary50,
-    fontSize: 16,
-  },
+
   cancelButton: {
     position: "absolute", // This will position the button absolutely within its parent
     top: 4, // 10 pixels from the top

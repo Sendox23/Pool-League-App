@@ -9,9 +9,9 @@ export default function GameList({
   onEditGame,
   onDeleteGame,
   userFullName,
-  opponentFirstName,
-  opponentLastName,
+  opponentName,
   userCtx,
+  isEditing,
 }) {
   const scrollViewRef = useRef(null);
   useEffect(() => {
@@ -32,9 +32,9 @@ export default function GameList({
             key={game.id}
             index={index}
             userCtx={userCtx}
-            opponentFirstName={opponentFirstName}
-            opponentLastName={opponentLastName}
+            opponentName={opponentName}
             game={game}
+            isEditing={isEditing}
             onEditGame={() => onEditGame(game)}
             onDeleteGame={onDeleteGame}
             userFullName={userFullName}
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.secondary100,
     borderRadius: 8,
-    backgroundColor: Colors.primary400,
+    backgroundColor: Colors.primary100,
     maxHeight: 300,
     shadowColor: Colors.primary600,
     shadowOffset: { width: 2, height: 2 },

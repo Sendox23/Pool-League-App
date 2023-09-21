@@ -3,26 +3,48 @@ import { View, Text, Image, StyleSheet } from "react-native";
 import { commonScreenStyle } from "../../constants/commonStyles";
 import { TouchableOpacity } from "react-native";
 
+import LoadingOverlay from "../../components/ui/LoadingOverlay";
 import { AuthContext } from "../../store/context/AuthContext";
-import { isUserInLeague } from "../../util/firebase/firebaseDb";
-
+import { isUserInLeague } from "../../util/firebase/databaseFunctions/leagueFunctions";
+import ErrorComponent from "../../components/ui/ErrorComponent";
 
 export default function LeaguesScreen({ navigation }) {
   const userCtx = useContext(AuthContext);
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleImagePress = async (screenName, params) => {
-    const userInLeague = await isUserInLeague(userCtx.user.uid, params.leagueType);
-  
-    if (!userInLeague) {
-      setMessage(
-        `You are currently not in a ${params.leagueType} league. Please contact the league owner to request to join.`
+    try {
+      setIsLoading(true); // Set loading to true before making the request
+      setError(null); // Clear any previous errors
+
+      const userInLeague = await isUserInLeague(
+        userCtx.user.uid,
+        params.leagueType
       );
-    } else {
-      setMessage("");
-      navigation.navigate(screenName, params);
+
+      if (!userInLeague) {
+        setMessage(
+          `You are currently not in a ${params.leagueType} league. Please contact the league owner to request to join.`
+        );
+      } else {
+        setMessage("");
+        navigation.navigate(screenName, params);
+      }
+    } catch (err) {
+      setError(err.message); // Handle any errors and set the error message
+    } finally {
+      setIsLoading(false); // Set loading to false after the request is completed
     }
   };
+  if (isLoading) {
+    return <LoadingOverlay />;
+  }
+
+  if (error) {
+    return <ErrorComponent error={error} />;
+  }
 
   return (
     <View style={commonScreenStyle.container}>
@@ -79,6 +101,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   messageStyle: {
+    fontSize: 18,
     backgroundColor: "#ffdddd", // Light red background
     color: "#d33", // Dark red text
     padding: 10,

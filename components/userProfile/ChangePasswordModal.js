@@ -11,7 +11,7 @@ import {
 import Input from "../auth/Input";
 import { resetUserPassword } from "../../util/firebase/firebaseAuth";
 import { getErrorMessage } from "../../helpers/authentication/errorHandler";
-
+import LoadingOverlay from "../ui/LoadingOverlay";
 
 export default function ChangePasswordModal({ visible, onClose }) {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -20,6 +20,7 @@ export default function ChangePasswordModal({ visible, onClose }) {
   const [currentPasswordError, setCurrentPasswordError] = useState("");
   const [newPasswordError, setNewPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   function onCloseHandler() {
     setConfirmPassword("");
@@ -64,6 +65,9 @@ export default function ChangePasswordModal({ visible, onClose }) {
       );
       return;
     }
+
+    setIsLoading(true);
+
     try {
       await resetUserPassword(currentPassword, newPassword);
       Alert.alert("Success", "Password changed successfully");
@@ -76,8 +80,11 @@ export default function ChangePasswordModal({ visible, onClose }) {
       } else {
         Alert.alert("Error", getErrorMessage(error.code));
       }
+    } finally {
+      setIsLoading(false);
     }
   };
+  
   const errorStyleOptions = {
     input: {
       borderColor: "red",
@@ -85,6 +92,11 @@ export default function ChangePasswordModal({ visible, onClose }) {
       backgroundColor: "#FFEBEE",
     },
   };
+
+  if (isLoading) {
+    return <LoadingOverlay />;
+  }
+
   return (
     <Modal
       animationType="slide"
@@ -138,6 +150,7 @@ export default function ChangePasswordModal({ visible, onClose }) {
     </Modal>
   );
 }
+
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
@@ -169,7 +182,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 20,
-
   },
   buttonContainer: {
     flexDirection: "row",

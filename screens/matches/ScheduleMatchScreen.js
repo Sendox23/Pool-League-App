@@ -4,14 +4,20 @@ import { AuthContext } from "../../store/context/AuthContext";
 import {
   fetchLeagues,
   fetchBrackets,
+} from "../../util/firebase/databaseFunctions/leagueFunctions";
+import {
   addMatch,
-} from "../../util/firebase/firebaseDb"; // Import the new functions
-import { Colors } from "../../constants/colors";
+  fetchFinishedMatchesBetweenTwoPlayers,
+} from "../../util/firebase/databaseFunctions/matchFunctions";
+
 import PlayerPicker from "../../components/matches/scheduleMatch/PlayerPicker";
+import ErrorComponent from "../../components/ui/ErrorComponent";
+
+import { Colors } from "../../constants/colors";
 
 export default function ScheduleMatchScreen({ navigation, route }) {
   const userCtx = useContext(AuthContext);
-
+  const userName = `${userCtx.firstName} ${userCtx.lastName}`;
   const [players, setPlayers] = useState([]);
   const [selectedPlayerUid, setSelectedPlayerUid] = useState(null);
   const [bracket, setBracket] = useState(null);
@@ -24,31 +30,48 @@ export default function ScheduleMatchScreen({ navigation, route }) {
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
-
       try {
         const leagues = await fetchLeagues();
+        const userName = `${userCtx.firstName} ${userCtx.lastName}`;
 
         if (leagues && leagues.length > 0) {
-          const league = leagues.find((l) => l.leagueName === leagueType); // Find the specific league
+          const league = leagues.find((l) => l.leagueName === leagueType);
 
           if (league) {
             const brackets = fetchBrackets(league, userCtx.user.uid);
 
-            setBracket(brackets[0]?.bracketId);
+            if (brackets && brackets.length > 0) {
+              setBracket(brackets[0]?.bracketId);
 
-            const allPlayers = brackets.flatMap((bracket) => {
-              return bracket.players
-                ? Object.keys(bracket.players)
-                    .filter((uid) => uid !== userCtx.user.uid)
-                    .map((uid) => ({ uid, ...bracket.players[uid] }))
-                : [];
-            });
+              const allPlayers = brackets.flatMap((bracket) => {
+                return bracket.players
+                  ? Object.keys(bracket.players)
+                      .filter((uid) => uid !== userCtx.user.uid)
+                      .map((uid) => ({ uid, ...bracket.players[uid] }))
+                  : [];
+              });
 
-            setPlayers(allPlayers);
+              const filteredPlayers = [];
+              for (const opponent of allPlayers) {
+                const opponentName = `${opponent.firstName} ${opponent.lastName}`;
+                const finishedMatches =
+                  await fetchFinishedMatchesBetweenTwoPlayers(
+                    userName,
+                    opponentName,
+                    leagueType,
+                    brackets[0]?.bracketId
+                  );
+
+                if (finishedMatches.length === 0) {
+                  filteredPlayers.push(opponent);
+                }
+              }
+
+              setPlayers(filteredPlayers);
+            }
           }
         }
       } catch (err) {
-
         setError(err.message);
       }
 
@@ -56,28 +79,35 @@ export default function ScheduleMatchScreen({ navigation, route }) {
     };
 
     fetchData();
-  }, [leagueType]);
+  }, [leagueType, userCtx.user]);
 
   const startGameHandler = async () => {
+    setIsLoading(true);
+
     const opponent = players.find((p) => p.uid === selectedPlayerUid);
-    if (!opponent) return;
-  
+    if (!opponent) {
+      setIsCreatingMatch(false);
+      return;
+    }
     const opponentName = `${opponent.firstName} ${opponent.lastName}`;
-    const userName = `${userCtx.firstName} ${userCtx.lastName}`;
-    
-    const matchId = await addMatch(userName, opponentName, leagueType, bracket); // Get the match ID returned
-  
+    const matchId = await addMatch(userName, opponentName, leagueType, bracket);
+
     navigation.navigate("CurrentMatch", {
       opponentUid: opponent.uid,
-      opponentFirstName: opponent.firstName,
-      opponentLastName: opponent.lastName,
       leagueType: leagueType,
       bracket: bracket,
       opponentName: opponentName,
       userName: userName,
-      matchId: matchId,  // Pass the match ID to the next screen
+      matchId: matchId,
     });
+
+    setIsLoading(false);
   };
+
+
+  if (error) {
+    return <ErrorComponent error={error} />;
+  }
 
   return (
     <View style={styles.screen}>
@@ -86,6 +116,7 @@ export default function ScheduleMatchScreen({ navigation, route }) {
         selectedPlayerUid={selectedPlayerUid}
         onPlayerChange={setSelectedPlayerUid}
         onStartGame={startGameHandler}
+        isLoading={isLoading}
       />
     </View>
   );
@@ -93,8 +124,8 @@ export default function ScheduleMatchScreen({ navigation, route }) {
 
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: Colors.secondary500,
+    backgroundColor: Colors.secondary400,
     flex: 1,
-    padding: 20,
+    alignItems: "center",
   },
 });

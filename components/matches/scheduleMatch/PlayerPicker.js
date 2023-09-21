@@ -2,7 +2,8 @@ import { useContext } from "react";
 import { Platform, View, StyleSheet, Text } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 
-import StartGameButton from "./StartGameButton";
+import Button from "../../ui/Button";
+import LoadingSpinner from "../../ui/LoadingSpinner";
 
 import { AuthContext } from "../../../store/context/AuthContext";
 import { Colors } from "../../../constants/colors";
@@ -12,12 +13,17 @@ export default function PlayerPicker({
   selectedPlayerUid,
   onPlayerChange,
   onStartGame,
+  isLoading,
 }) {
   const userCtx = useContext(AuthContext);
 
   const getSelectedPlayerName = () => {
-    const selectedPlayer = players.find((player) => player.uid === selectedPlayerUid);
-    return selectedPlayer ? `${selectedPlayer.firstName} ${selectedPlayer.lastName}` : null;
+    const selectedPlayer = players.find(
+      (player) => player.uid === selectedPlayerUid
+    );
+    return selectedPlayer
+      ? `${selectedPlayer.firstName} ${selectedPlayer.lastName}`
+      : null;
   };
 
   return (
@@ -54,7 +60,14 @@ export default function PlayerPicker({
         </>
       )}
 
-      {selectedPlayerUid && <StartGameButton onStartGame={onStartGame} />}
+      {selectedPlayerUid && (
+        <Button
+          onPress={onStartGame}
+          style={{ button: styles.button, buttonText: styles.buttonText }}
+        >
+          {isLoading ? <LoadingSpinner /> : "Start Game"}
+        </Button>
+      )}
     </View>
   );
 }
@@ -91,7 +104,7 @@ const styles = StyleSheet.create({
     width: 220,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 20,
+    marginBottom: 50,
   },
   picker: {
     ...Platform.select({
@@ -112,12 +125,11 @@ const styles = StyleSheet.create({
       android: {
         marginTop: 10, // Uniform margin
         fontSize: 28, // Increase font size
-        color: Colors.primary400,
         fontWeight: "500", // Semi-bold
       },
     }),
     fontSize: 28, // Increase font size
-    color: Colors.primary400,
+    color: Colors.secondary50,
     fontWeight: "500", // Semi-bold
   },
   vsText: {
@@ -128,16 +140,21 @@ const styles = StyleSheet.create({
         marginBottom: 20,
       },
     }),
-    fontSize: 20,
-    color: Colors.secondary100,
+    fontSize: 24,
+    color: Colors.secondary200,
   },
-  buttonContainer: {
-    backgroundColor: "white",
+  button: {
     borderRadius: 8,
-    borderColor: "black",
-    borderWidth: 2,
-    marginBottom: 30, // Uniform margin
-    width: 220, // Increase width for better space
+    marginTop: 70,
     alignItems: "center",
+    height: 50,
+    backgroundColor: Colors.secondary600,
+    borderColor: Colors.secondary50,
+    borderWidth: 1,
+  },
+  buttonText: {
+    color: Colors.secondary50,
+    fontSize: 18,
+    fontWeight: "500",
   },
 });

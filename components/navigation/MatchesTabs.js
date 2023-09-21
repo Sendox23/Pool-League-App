@@ -12,16 +12,6 @@ export default function MatchesTabs({ route, navigation }) {
   return (
     <MatchesTabsNavigator.Navigator
       screenOptions={{
-        headerShown: true,
-        headerLeft: () => (
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="black"
-            style={styles.backButton}
-            onPress={() => navigation.navigate("Leagues")}
-          />
-        ),
         headerStyle: styles.header,
         headerTitleStyle: styles.headerTitle,
         headerTitleAlign: "center",
@@ -33,6 +23,15 @@ export default function MatchesTabs({ route, navigation }) {
         component={ScheduleMatchScreen}
         initialParams={{ leagueType: route.params?.leagueType }}
         options={{
+          headerLeft: () => (
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color="black"
+              style={styles.backButton}
+              onPress={() => navigation.navigate("Leagues")}
+            />
+          ),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="calendar" size={size} color={color} />
           ),
@@ -51,7 +50,6 @@ export default function MatchesTabs({ route, navigation }) {
     </MatchesTabsNavigator.Navigator>
   );
 }
-
 const styles = StyleSheet.create({
   backButton: {
     marginLeft: 10,

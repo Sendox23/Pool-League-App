@@ -7,9 +7,9 @@ export default function GameRow({
   userCtx,
   game,
   onEditGame,
+  isEditing,
   onDeleteGame,
-  opponentFirstName,
-  opponentLastName,
+  opponentName,
   userFullName,
 }) {
   return (
@@ -18,7 +18,7 @@ export default function GameRow({
         {`Game ${index + 1}:`}
         {game.winner === userFullName
           ? ` ${userCtx.firstName} ${userCtx.lastName}`
-          : ` ${opponentFirstName} ${opponentLastName}`}
+          : ` ${opponentName}`}
         {game.breakAndRun ? " \n(Break & Run)" : ""}
       </Text>
       <View style={styles.buttonContainer}>
@@ -26,15 +26,17 @@ export default function GameRow({
           onPress={() => {
             onEditGame(game); // Add this line to call onEditGame when the edit button is pressed
           }}
-          style={styles.iconButton}
+          style={[styles.iconButton, isEditing && styles.iconButtonDisabled]}
+          disabled={isEditing}
         >
-          <FontAwesome5 name="edit" size={12} color="black" />
+          <FontAwesome5 name="edit" size={12} color={Colors.primary600} />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => onDeleteGame(game.id)}
-          style={styles.iconButton}
+          style={[styles.iconButton, isEditing && styles.iconButtonDisabled]}
+          disabled={isEditing}
         >
-          <FontAwesome5 name="trash" size={12} color="black" />
+          <FontAwesome5 name="trash" size={12} color={Colors.error500} />
         </TouchableOpacity>
       </View>
     </View>
@@ -53,20 +55,23 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
     fontWeight: "500",
-    color: Colors.secondary50,
+    color: "black",
   },
   buttonContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
   iconButton: {
-    marginHorizontal: 5,
+    marginHorizontal: 4,
     padding: 10,
     borderRadius: 50,
+    borderWidth: 1,
+    borderColor: Colors.secondary100,
     backgroundColor: "white",
   },
-  disabledButton: {
+  iconButtonDisabled: {
     // Styles for the disabled state
     opacity: 0.5,
+    backgroundColor: Colors.secondary50,
   },
 });

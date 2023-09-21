@@ -46,6 +46,7 @@ function VerifyEmailScreen({ navigation }) {
       setIsLoading(false);
     }
   }
+  
   return (
     <View style={commonScreenStyle.container}>
       <View style={commonScreenStyle.content}>

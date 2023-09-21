@@ -25,5 +25,7 @@ export const Colors = {
 
   // Error Color
   error100: "#FFB0B0",     // Light red for error messages
+  error300: "#FF6666",     // Standard red for error messages
+  error400: "#FF4D4D",     // Darker red for error messages
   error500: "#FF3333",     // Darker red for highlighting errors
 };
