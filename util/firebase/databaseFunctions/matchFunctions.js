@@ -1,4 +1,4 @@
-import { fetchData, buildRef, writeData } from "./firebase-utils";
+import { fetchData, buildRef, writeData, deleteData } from "./firebase-utils";
 import { onValue } from "firebase/database";
 // Generate a Firebase database reference for a specific match within a given bracket and league
 export const getMatchRef = (leagueType, bracket, matchId) => {
@@ -25,11 +25,21 @@ export const addMatch = async (player1, player2, leagueType, bracketId) => {
     existingData2 || {
       player1,
       player2,
-      status: "Ongoing",
+      status: "Pending",
+      confirmedStart: [player1],
       matchWinner: "",
       date: "TBD",
       time: "TBD",
-    }; // Adding "TBD" as the initial date
+    };
+
+  if (!existingData1 && !existingData2) {
+    matchData.confirmedStart = [player1];
+  } else {
+    if (!matchData.confirmedStart.includes(player1)) {
+      matchData.confirmedStart.push(player1);
+    }
+  }
+
   const matchId = existingData1 ? newMatchId1 : newMatchId2;
 
   await writeData(
@@ -38,6 +48,12 @@ export const addMatch = async (player1, player2, leagueType, bracketId) => {
   );
 
   return matchId;
+};
+
+// Delete a match from Firebase
+export const deleteMatch = async (leagueType, bracket, matchId) => {
+  const matchRef = getMatchRef(leagueType, bracket, matchId);
+  await deleteData(matchRef);
 };
 
 // Update match details in Firebase

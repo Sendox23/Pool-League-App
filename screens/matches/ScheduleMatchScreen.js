@@ -7,10 +7,13 @@ import {
 } from "../../util/firebase/databaseFunctions/leagueFunctions";
 import {
   addMatch,
+  deleteMatch,
   fetchFinishedMatchesBetweenTwoPlayers,
+  subscribeToMatchStatus,
 } from "../../util/firebase/databaseFunctions/matchFunctions";
 
 import PlayerPicker from "../../components/matches/scheduleMatch/PlayerPicker";
+import WaitingModal from "./WaitingModal";
 import ErrorComponent from "../../components/ui/ErrorComponent";
 
 import { Colors } from "../../constants/colors";
@@ -18,13 +21,28 @@ import { Colors } from "../../constants/colors";
 export default function ScheduleMatchScreen({ navigation, route }) {
   const userCtx = useContext(AuthContext);
   const userName = `${userCtx.firstName} ${userCtx.lastName}`;
+  const leagueType = route.params?.leagueType;
+
   const [players, setPlayers] = useState([]);
   const [selectedPlayerUid, setSelectedPlayerUid] = useState(null);
   const [bracket, setBracket] = useState(null);
-  const leagueType = route.params?.leagueType;
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [matchId, setMatchId] = useState(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  let unsubscribe;
+
+  const cancelMatch = async () => {
+    if (unsubscribe) {
+      unsubscribe();
+    }
+    if (matchId) {
+      await deleteMatch(leagueType, bracket, matchId);
+    }
+    setIsModalVisible(false);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,6 +101,7 @@ export default function ScheduleMatchScreen({ navigation, route }) {
 
   const startGameHandler = async () => {
     setIsLoading(true);
+    setIsModalVisible(true);
 
     const opponent = players.find((p) => p.uid === selectedPlayerUid);
     if (!opponent) {
@@ -90,20 +109,38 @@ export default function ScheduleMatchScreen({ navigation, route }) {
       return;
     }
     const opponentName = `${opponent.firstName} ${opponent.lastName}`;
-    const matchId = await addMatch(userName, opponentName, leagueType, bracket);
-
-    navigation.navigate("CurrentMatch", {
-      opponentUid: opponent.uid,
-      leagueType: leagueType,
-      bracket: bracket,
-      opponentName: opponentName,
-      userName: userName,
-      matchId: matchId,
-    });
-
+    const matchId = await addMatch(
+      userName,
+      opponentName,
+      leagueType,
+      bracket
+    );
+    setMatchId(matchId); // Set matchId here
+    unsubscribe = subscribeToMatchStatus(
+      leagueType,
+      bracket,
+      matchId,
+      (matchDetails) => {
+        if (
+          matchDetails &&
+          matchDetails.confirmedStart &&
+          matchDetails.confirmedStart.length === 2
+        ) {
+          navigation.navigate("CurrentMatch", {
+            opponentUid: opponent.uid,
+            leagueType: leagueType,
+            bracket: bracket,
+            opponentName: opponentName,
+            userName: userName,
+            matchId: matchId,
+          });
+          setIsModalVisible(false);
+          unsubscribe(); // Unsubscribe from updates after navigating
+        }
+      }
+    );
     setIsLoading(false);
   };
-
 
   if (error) {
     return <ErrorComponent error={error} />;
@@ -111,6 +148,7 @@ export default function ScheduleMatchScreen({ navigation, route }) {
 
   return (
     <View style={styles.screen}>
+      <WaitingModal isVisible={isModalVisible} onCancel={cancelMatch} />
       <PlayerPicker
         players={players}
         selectedPlayerUid={selectedPlayerUid}
