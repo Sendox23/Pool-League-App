@@ -6,6 +6,8 @@ import PlayersHeader from "./PlayersHeader";
 import AddGameButtons from "./AddGameButtons";
 import BreakAndRunCheckBox from "./BreakAndRunCheckBox";
 import GameList from "./GameList";
+import LoadingOverlay from "../../ui/LoadingOverlay";
+import LoadingSpinner from "../../ui/LoadingSpinner";
 import ErrorComponent from "../../ui/ErrorComponent";
 
 import {
@@ -23,7 +25,6 @@ import { calculateWins } from "../../../helpers/games/gameHelpers";
 import { AuthContext } from "../../../store/context/AuthContext";
 
 import { Colors } from "../../../constants/colors";
-import LoadingOverlay from "../../ui/LoadingOverlay";
 
 export default function Games({
   navigation,
@@ -62,7 +63,7 @@ export default function Games({
       bracket,
       matchId,
       (details) => {
-        console.log(details);
+
         if (details?.status === "Finished") {
           navigation.navigate("MatchResults", {
             ...commonNavParams,
